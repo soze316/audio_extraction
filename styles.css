@@ -1,0 +1,288 @@
+:root {
+    --primary-color: #4a6fa5;
+    --secondary-color: #6c757d;
+    --accent-color: #6c8fc7;
+    --background-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --border-color: #e0e0e0;
+    --highlight-color: #e3f2fd;
+    --success-color: #28a745;
+    --error-color: #dc3545;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+header h1 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
+}
+
+button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+button:hover {
+    background-color: var(--accent-color);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+button.primary {
+    background-color: var(--primary-color);
+}
+
+button.primary:hover {
+    background-color: var(--accent-color);
+}
+
+.episodes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.episode-item {
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.episode-item:hover {
+    background-color: var(--highlight-color);
+}
+
+.episode-item h3 {
+    margin-bottom: 5px;
+    color: var(--primary-color);
+}
+
+.episode-description {
+    font-style: italic;
+    color: var(--secondary-color);
+    margin-top: 8px;
+    font-size: 0.9rem;
+}
+
+.audio-player {
+    margin: 20px 0;
+}
+
+audio {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.player-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.timeline {
+    position: relative;
+    height: 30px;
+    background-color: #f0f0f0;
+    border-radius: 15px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+.progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background-color: var(--accent-color);
+    transition: width 0.1s linear;
+}
+
+.highlights {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.highlight-marker {
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    background-color: var(--error-color);
+    cursor: pointer;
+}
+
+.highlight-marker::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -4px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--error-color);
+    border-radius: 50%;
+}
+
+.highlights-list {
+    margin: 20px 0;
+}
+
+.highlight-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--highlight-color);
+    border-left: 4px solid var(--accent-color);
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.highlight-item button {
+    background: none;
+    color: var(--error-color);
+    padding: 0 5px;
+}
+
+.highlight-item button:hover {
+    background: none;
+    color: #b71c1c;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+#loadingOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .card {
+        padding: 15px;
+    }
+    
+    .input-group {
+        flex-direction: column;
+    }
+    
+    button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .player-controls {
+        flex-direction: column;
+    }
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}

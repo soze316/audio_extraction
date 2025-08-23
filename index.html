@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sermon Highlighter</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sermon Highlighter</h1>
+            <p>Extract key moments and create a 10-minute highlight reel</p>
+        </header>
+
+        <main>
+            <section class="card">
+                <h2>1. Enter RSS Feed URL</h2>
+                <div class="input-group">
+                    <input type="text" id="rssUrl" placeholder="Paste your podcast RSS feed URL here" value="http://enfieldtown.church/rss">
+                    <button id="fetchEpisodes">
+                        <i class="fas fa-search"></i> Fetch Episodes
+                    </button>
+                </div>
+            </section>
+
+            <section class="card" id="episodesSection" style="display: none;">
+                <h2>2. Select a Sermon</h2>
+                <div id="episodesList" class="episodes-list">
+                    <!-- Episodes will be populated here -->
+                </div>
+            </section>
+
+            <section class="card" id="audioPlayerSection" style="display: none;">
+                <h2>3. Listen & Select Highlights</h2>
+                <div class="audio-player">
+                    <audio id="audioPlayer" controls></audio>
+                    <div class="player-controls">
+                        <button id="playPauseBtn"><i class="fas fa-play"></i> Play</button>
+                        <button id="addHighlightBtn"><i class="fas fa-plus"></i> Add Highlight</button>
+                    </div>
+                    <div class="timeline">
+                        <div class="progress"></div>
+                        <div class="highlights" id="highlightsContainer">
+                            <!-- Highlight markers will be added here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="highlights-list" id="highlightsList">
+                    <!-- Added highlights will be listed here -->
+                </div>
+                <div class="action-buttons">
+                    <button id="generateBtn" class="primary">
+                        <i class="fas fa-magic"></i> Generate 10-Minute Version
+                    </button>
+                </div>
+            </section>
+
+            <section class="card" id="resultSection" style="display: none;">
+                <h2>Your Highlighted Version</h2>
+                <div id="resultContent">
+                    <p>Your highlighted version will appear here.</p>
+                </div>
+                <div class="action-buttons">
+                    <button id="downloadBtn" class="primary">
+                        <i class="fas fa-download"></i> Download Highlights
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <div id="loadingOverlay">
+            <div class="spinner"></div>
+            <p id="loadingText">Processing your request...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
