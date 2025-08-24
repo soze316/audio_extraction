@@ -762,23 +762,54 @@ function displaySermonAnalysis(analysisJson) {
         highlightsSection.innerHTML = '<h3><i class="fas fa-star"></i> Key Sermon Highlights</h3>';
         
         highlights.forEach((highlight, index) => {
+            console.log('Processing highlight:', highlight);
+            console.log('Available properties:', Object.keys(highlight));
+            
+            // Debug: show all property values
+            console.log('Full highlight object:', JSON.stringify(highlight, null, 2));
+            Object.keys(highlight).forEach(key => {
+                console.log(`${key}:`, highlight[key]);
+            });
+            
             const highlightCard = document.createElement('div');
             highlightCard.className = 'highlight-card';
             
-            // Parse time to seconds for audio seeking
-            const startSeconds = parseTimeToSeconds(highlight.start_time);
-            const endSeconds = parseTimeToSeconds(highlight.end_time);
+            // Extract timestamps - try JSON properties first, then description text
+            let startTime = highlight.start_timestamp || highlight.startTime || highlight.start_time;
+            let endTime = highlight.end_timestamp || highlight.endTime || highlight.end_time;
+            
+            // If no separate properties, try extracting from description
+            if (!startTime && !endTime && highlight.description) {
+                // Try format: "Estimated Timestamps: 1:40 - 2:55"
+                const timestampMatch = highlight.description.match(/Estimated Timestamps:\s*(\d+:\d+)\s*-\s*(\d+:\d+)/);
+                if (timestampMatch) {
+                    startTime = timestampMatch[1];
+                    endTime = timestampMatch[2];
+                }
+                
+                // Try format: "Timestamp: 1:40 - 2:55"
+                const timestampMatch2 = highlight.description.match(/Timestamp:\s*(\d+:\d+)\s*-\s*(\d+:\d+)/);
+                if (timestampMatch2) {
+                    startTime = timestampMatch2[1];
+                    endTime = timestampMatch2[2];
+                }
+            }
+            
+            console.log('Extracted times:', { startTime, endTime });
+            
+            const startSeconds = parseTimeToSeconds(startTime);
+            const endSeconds = parseTimeToSeconds(endTime);
             
             highlightCard.innerHTML = `
                 <div class="highlight-header">
                     <h4 class="highlight-title">${highlight.headline}</h4>
                     <div class="highlight-time">
-                        <button class="time-link" onclick="seekToTime(${startSeconds})" title="Jump to ${highlight.start_time}">
-                            <i class="fas fa-play"></i> ${highlight.start_time}
+                        <button class="time-link" onclick="seekToTime(${startSeconds})" title="Jump to ${startTime}">
+                            <i class="fas fa-play"></i> ${startTime || 'N/A'}
                         </button>
                         ${endSeconds ? `<span class="time-separator">-</span>
-                        <button class="time-link" onclick="seekToTime(${endSeconds})" title="Jump to ${highlight.end_time}">
-                            <i class="fas fa-stop"></i> ${highlight.end_time}
+                        <button class="time-link" onclick="seekToTime(${endSeconds})" title="Jump to ${endTime}">
+                            <i class="fas fa-stop"></i> ${endTime}
                         </button>` : ''}
                     </div>
                 </div>
@@ -830,34 +861,119 @@ function displaySermonAnalysis(analysisJson) {
     transcriptionContent.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Parse time string (e.g., "5m28s190ms") to seconds
+// Parse time string (e.g., "1:40" or "5m28s190ms") to seconds
 function parseTimeToSeconds(timeString) {
+    console.log('parseTimeToSeconds called with:', timeString);
+    
     if (!timeString) return 0;
     
     let seconds = 0;
-    const timeRegex = /(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?(?:(\d+)ms)?/;
-    const match = timeString.match(timeRegex);
     
-    if (match) {
-        const hours = parseInt(match[1]) || 0;
-        const minutes = parseInt(match[2]) || 0;
-        const secs = parseInt(match[3]) || 0;
-        const milliseconds = parseInt(match[4]) || 0;
+    // Handle MM:SS format (e.g., "1:40")
+    if (timeString.includes(':')) {
+        const parts = timeString.split(':');
+        if (parts.length === 2) {
+            const minutes = parseInt(parts[0]) || 0;
+            const secs = parseInt(parts[1]) || 0;
+            seconds = minutes * 60 + secs;
+            
+            console.log('Parsed MM:SS format:', { 
+                input: timeString, 
+                minutes, 
+                secs, 
+                totalSeconds: seconds 
+            });
+            
+            return seconds;
+        }
         
-        seconds = hours * 3600 + minutes * 60 + secs + milliseconds / 1000;
+        // Handle HH:MM:SS format
+        if (parts.length === 3) {
+            const hours = parseInt(parts[0]) || 0;
+            const minutes = parseInt(parts[1]) || 0;
+            const secs = parseInt(parts[2]) || 0;
+            seconds = hours * 3600 + minutes * 60 + secs;
+            
+            console.log('Parsed HH:MM:SS format:', { 
+                input: timeString, 
+                hours, 
+                minutes, 
+                secs, 
+                totalSeconds: seconds 
+            });
+            
+            return seconds;
+        }
     }
+    
+    // Handle complex format (e.g., "5m28s190ms") - fallback for other formats
+    const hoursMatch = timeString.match(/(\d+)h/);
+    const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
+    
+    const minutesMatch = timeString.match(/(\d+)m/);
+    const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
+    
+    const secondsMatch = timeString.match(/(\d+)s(?!\d)/);
+    const secs = secondsMatch ? parseInt(secondsMatch[1]) : 0;
+    
+    const millisecondsMatch = timeString.match(/(\d+)ms/);
+    const milliseconds = millisecondsMatch ? parseInt(millisecondsMatch[1]) : 0;
+    
+    seconds = hours * 3600 + minutes * 60 + secs + milliseconds / 1000;
+    
+    console.log('Parsed complex format:', { 
+        input: timeString, 
+        hours, 
+        minutes, 
+        secs, 
+        milliseconds, 
+        totalSeconds: seconds 
+    });
     
     return seconds;
 }
 
 // Seek to specific time in audio
 function seekToTime(seconds) {
-    if (audioPlayer && !isNaN(seconds)) {
-        audioPlayer.currentTime = seconds;
-        if (audioPlayer.paused) {
-            audioPlayer.play();
+    console.log('seekToTime called with seconds:', seconds);
+    
+    if (audioElement && !isNaN(seconds)) {
+        console.log('Audio element found, current time before seek:', audioElement.currentTime);
+        console.log('Audio duration:', audioElement.duration);
+        console.log('Audio readyState:', audioElement.readyState);
+        
+        // Pause first to ensure clean state
+        const wasPlaying = !audioElement.paused;
+        audioElement.pause();
+        
+        // Set the time and wait for it to be set
+        audioElement.currentTime = seconds;
+        console.log('Set currentTime to:', seconds, 'actual currentTime after set:', audioElement.currentTime);
+        
+        // Wait for the seek to complete before playing if it was playing
+        if (wasPlaying) {
+            const seekHandler = () => {
+                audioElement.removeEventListener('seeked', seekHandler);
+                console.log('Seeked event fired, current time:', audioElement.currentTime);
+                audioElement.play();
+            };
+            audioElement.addEventListener('seeked', seekHandler);
+            
+            // Fallback in case seeked event doesn't fire
+            setTimeout(() => {
+                audioElement.removeEventListener('seeked', seekHandler);
+                console.log('Fallback timeout, current time:', audioElement.currentTime);
+                if (Math.abs(audioElement.currentTime - seconds) > 0.5) {
+                    console.log('Time mismatch, setting again to:', seconds);
+                    audioElement.currentTime = seconds;
+                }
+                audioElement.play();
+            }, 100);
         }
+        
         showNotification(`Jumped to ${formatTime(seconds)}`, 'info');
+    } else {
+        console.error('seekToTime failed:', { audioElement: !!audioElement, seconds, isNaN: isNaN(seconds) });
     }
 }
 
@@ -876,22 +992,61 @@ function addHighlightFromAnalysis(time, text) {
 
 // Play audio segment
 function playSegment(startTime, endTime) {
-    if (audioPlayer && !isNaN(startTime)) {
-        audioPlayer.currentTime = startTime;
-        audioPlayer.play();
+    console.log('playSegment called with:', { startTime, endTime });
+    
+    if (audioElement && !isNaN(startTime)) {
+        console.log('Audio element found, current time before:', audioElement.currentTime);
         
-        if (!isNaN(endTime) && endTime > startTime) {
-            // Stop at end time
-            const stopHandler = () => {
-                if (audioPlayer.currentTime >= endTime) {
-                    audioPlayer.pause();
-                    audioPlayer.removeEventListener('timeupdate', stopHandler);
+        // Pause first to ensure clean state
+        audioElement.pause();
+        
+        // Set the time and wait for it to be set
+        audioElement.currentTime = startTime;
+        console.log('Set currentTime to:', startTime, 'actual currentTime:', audioElement.currentTime);
+        
+        // Use a more reliable approach - wait for canplay event if needed
+        const playFromTime = () => {
+            console.log('About to play from time:', audioElement.currentTime);
+            audioElement.play().then(() => {
+                console.log('Playing started, current time:', audioElement.currentTime);
+                
+                if (!isNaN(endTime) && endTime > startTime) {
+                    // Stop at end time
+                    const stopHandler = () => {
+                        if (audioElement.currentTime >= endTime) {
+                            audioElement.pause();
+                            audioElement.removeEventListener('timeupdate', stopHandler);
+                            console.log('Stopped at end time:', endTime);
+                        }
+                    };
+                    audioElement.addEventListener('timeupdate', stopHandler);
                 }
+            }).catch(error => {
+                console.error('Play failed:', error);
+            });
+        };
+        
+        // Try immediate play first
+        if (audioElement.readyState >= 2) { // HAVE_CURRENT_DATA
+            playFromTime();
+        } else {
+            // Wait for audio to be ready
+            const readyHandler = () => {
+                audioElement.removeEventListener('canplay', readyHandler);
+                playFromTime();
             };
-            audioPlayer.addEventListener('timeupdate', stopHandler);
+            audioElement.addEventListener('canplay', readyHandler);
+            
+            // Fallback timeout
+            setTimeout(() => {
+                audioElement.removeEventListener('canplay', readyHandler);
+                playFromTime();
+            }, 500);
         }
         
         showNotification(`Playing segment from ${formatTime(startTime)}`, 'info');
+    } else {
+        console.error('playSegment failed:', { audioElement: !!audioElement, startTime, isNaN: isNaN(startTime) });
     }
 }
 

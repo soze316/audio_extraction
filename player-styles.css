@@ -784,11 +784,11 @@ body {
 }
 
 .highlight-action-btn:nth-child(2) {
-    background: linear-gradient(135deg, #6f42c1, #5a2d91);
+    background: linear-gradient(135deg, #007bff, #0056b3);
 }
 
 .highlight-action-btn:nth-child(2):hover {
-    background: linear-gradient(135deg, #5a2d91, #4c1f78);
+    background: linear-gradient(135deg, #0056b3, #004085);
 }
 
 .reasoning-section {
